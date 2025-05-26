@@ -19,7 +19,6 @@ exports.register=async(ctx)=>{
     }catch(e){
         console.error('注册错误：', e)
         ctx.body={code:1,message:'注册失败，服务器出了差错'}
-        
     }
 }
 exports.login=async(ctx)=>{
