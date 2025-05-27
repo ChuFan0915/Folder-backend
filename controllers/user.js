@@ -51,3 +51,18 @@ exports.login=async(ctx)=>{
         ctx.body={code:1,message:'登录失败，服务器出了差错'}
     }
 }
+exports.logout=async(ctx)=>{
+    try{
+        ctx.body={
+            code:0,
+            message:'退出成功'
+        }
+    }catch(e){
+        ctx.body={
+            code:1,
+            message:'退出失败'
+        }
+        console.log(e);
+    }
+
+}
