@@ -7,6 +7,8 @@ const userRouter = require('./routes/user');
 const koaBody=require('koa-body').default
 const uploadRouter=require('./routes/file');
 const app = new Koa();
+const fs=require('fs')
+const path=require('path')
 
 // 添加 CORS 中间件
 app.use(cors({
@@ -19,7 +21,20 @@ app.use(cors({
 app.use(koaBody({
   multipart:true,
   formidable:{
-     maxFileSize: 200*1024*1024
+     maxFileSize: 5*1024*1024*1024,
+    //  实现大文件上传的临时切片分片
+    keepExtensions:true,
+    // 设置临时文件目录
+    uploadDir:path.join(__dirname,'uploads/temp'),
+    // 创建临时目录
+    onFileBegin:(name,file)=>{
+        const uploadDir=path.join(__dirname,'uploads/temp')
+       if(!fs.existsSync(uploadDir)){
+        // 如果临时不存在，我们就要自己新建一个
+        fs.mkdirSync(uploadDir,{recursive:true})
+       }
+    }
+
   }
 }))
 app.use(userRouter.routes()).use(userRouter.allowedMethods());
@@ -39,6 +54,6 @@ app.use(async (ctx, next) => {
     }
 });
 
-app.listen(3000, '192.168.124.55', () => {
-    console.log('服务器已启动：http:// 192.168.124.55:3000');
+app.listen(3000, '192.168.1.244', () => {
+    console.log('服务器已启动：http://192.168.1.244:3000');
 });

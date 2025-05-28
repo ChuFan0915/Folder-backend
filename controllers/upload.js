@@ -133,4 +133,53 @@ exports.DeleteFile=async(ctx)=>{
     console.log(e)
   }
   }
+  // 文件重命名
+  exports.renameFile=async(ctx)=>{
+    try{
+      // 首先我们要拿到两个值 一个id，一个新名字
+      const {id}=ctx.params
+      const {newFilename}=ctx.request.body
+      if(!newFilename){
+        ctx.body={
+          code:1,
+          message:'文件名不能为空'
+        }
+        return ;
+      }
+      // 从数据库拿到这个名字
+      const [rows]=await pool.query(
+         "SELECT filename, path FROM files WHERE id = ?",
+      [id]
+      );
+    const file = rows[0];
+    // 首先我们拿到旧的文件路径
+    const oldPath=path.join(__dirname,'../uploads',file.path)
+    // 拿到时间戳
+    const timestamp=file.path.split('--')[0]
+    const newPath=path.join(__dirname,'../uploads',`${timestamp}--${newFilename}`)
+        // 3. 重命名物理文件
+    if (fs.existsSync(oldPath)) {
+      fs.renameSync(oldPath, newPath);
+    }
+     // 4. 更新数据库记录
+    await pool.query(
+      "UPDATE files SET filename = ?, path = ? WHERE id = ?",
+      [newFilename, `${timestamp}--${newFilename}`, id]
+    );
+    ctx.body={
+      code:0,
+      message:'文件重命名成功',
+      data:{
+        id,
+        newFilename
+      }
+    }
+    }catch(e){
+      console.log(e);
+      ctx.body={
+        code:1,
+        message:'重命名失败，服务器错误'
+      }
+    }
+  }
 
